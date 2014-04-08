@@ -52,12 +52,26 @@ void main ()
 	vec3 p33 = gl_in[15].gl_Position.xyz;
 
 	// column major order
-	// TODO apparently mat4 of vertices is not possible, might need to do Px, Py, Pz and so on
-	mat4 P = mat4(
-      vec4(p00, p10, p20, p30),
-      vec4(p01, p11, p21, p31),
-      vec4(p02, p12, p22, p32),
-      vec4(p03, p13, p23, p33)
+
+	mat4 Px = mat4(
+      vec4(p00.x, p10.x, p20.x, p30.x),
+      vec4(p01.x, p11.x, p21.x, p31.x),
+      vec4(p02.x, p12.x, p22.x, p32.x),
+      vec4(p03.x, p13.x, p23.x, p33.x)
+	);
+
+	mat4 Py = mat4(
+	  vec4(p00.y, p10.y, p20.y, p30.y),
+	  vec4(p01.y, p11.y, p21.y, p31.y),
+	  vec4(p02.y, p12.y, p22.y, p32.y),
+	  vec4(p03.y, p13.y, p23.y, p33.y)
+	);
+
+	mat4 Pz = mat4(
+	  vec4(p00.z, p10.z, p20.z, p30.z),
+	  vec4(p01.z, p11.z, p21.z, p31.z),
+	  vec4(p02.z, p12.z, p22.z, p32.z),
+	  vec4(p03.z, p13.z, p23.z, p33.z)
 	);
 
 	/* 
@@ -73,6 +87,10 @@ void main ()
 
 	/* use one of the forms of the bi-cubic Bezier formula
 	to compute the vertex coordinates corresponding to (u,v) from the 16 control points.
+	In matrix math, this is
+	[1, u, u*u, u*u*u] * M * P * MT * [1; v; v*v; v*v*V]
 	*/
-	coords = (us * M * P * MT * vs).xyz;
+	coords.x = dot(((us * M) * Px) * MT, vs);
+	coords.y = dot(((us * M) * Pz) * MT, vs);
+	coords.z = dot(((us * M) * Py) * MT, vs);
 }
