@@ -39,10 +39,10 @@ void main ()
 
 	/* 
 	... and here is the formula we use. p00 + u*(p10-p00) + v*(p01-p00) is the point
-	on the parallelogram spanned by p00->p10 and p00->p01 parametrized using these
+	on the parallelogram spanned by p00->p10 and p00->p01 parameterized using these
 	two vectors. We add a funny perturbation on top of that.
 	In your code, you should use one of the forms of the bi-cubic Bezier formula
 	to compute the vertex coordinates corresponding to (u,v) from the 16 control points.
 	*/
-	coords = p00 + u*(p10-p00) + v*(p01-p00) + 0.05*sin(200*u*(1-u)*v*(1-v))*cross(p10-p00,p01-p00);
+	coords = p00 + u*(p10-p00) + v*(p01-p00);
 }

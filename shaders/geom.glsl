@@ -8,11 +8,9 @@ output by the tesselation evaluation shader
 layout (triangles) in;
 
 /* 
-We'll generate 6 triangles from a single input triangle (6*3=18).
-Basically, there is now just one patch, corresponding to one of the faces
-of the cube; we'll use 6-way cube symmetry to generate patches for all faces.
+We'll generate 1 triangle from a single input triangle.
 */
-layout (triangle_strip, max_vertices=18) out;
+layout (triangle_strip, max_vertices=3) out;
 
 /* 
 coords is arriving here from the tesselation shader
@@ -42,36 +40,32 @@ void main(void)
 	to generate all related by 6-way cube symmetry.
 	*/
 
-	for ( int s=-1; s<=1; s+=2 )
-		for ( int j=0; j<3; j++ ) {
-			for ( int i=0; i<3; i++ ) {
+	for ( int i=0; i<3; i++ ) {
+		vec3 permuted_coords, permuted_normal;
 
-				vec3 permuted_coords, permuted_normal;
+		// TODO for phong, need to somehow get normals from adjacent
+		// vertices in order to smoothly interpolate. Right now, each vertex
+		// is basically isolated, so phong shading results in flat shading.
+		vec3 normal = cross(coords[1]-coords[0],coords[2]-coords[0]);
 
-				// TODO for phong, need to somehow get normals from adjacent
-				// vertices in order to smoothly interpolate. Right now, each vertex
-				// is basically isolated, so phong shading results in flat shading.
-				vec3 normal = cross(coords[1]-coords[0],coords[2]-coords[0]);
+		/* swap and perhaps negate the coordinates as described above... */
 
-				/* swap and perhaps negate the coordinates as described above... */
-
-				for ( int k=0; k<3; k++ ) {
-					permuted_coords[k] = s*coords[i][(k+j)%3];
-					permuted_normal[k] = s*normal[(k+j)%3];
-				}
-
-				/* transform to the world coordinate system */
-				normal = mat3(MV)*permuted_normal;
-				permuted_coords = (MV*vec4(permuted_coords,1.0)).xyz;
-
-				/* pass phong output params, which are then interpolated */
-				_wnormal = normalize(normal);
-				_wcoord = permuted_coords;
-
-				/* apply projection matrix and emit the vertex */
-				gl_Position = P*vec4(permuted_coords,1);
-				EmitVertex();
-			}
-			EndPrimitive();
+		for ( int k=0; k<3; k++ ) {
+			permuted_coords[k] = -1*coords[i][k];
+			permuted_normal[k] = -1*normal[k];
 		}
+
+		/* transform to the world coordinate system */
+		normal = mat3(MV)*permuted_normal;
+		permuted_coords = (MV*vec4(permuted_coords,1.0)).xyz;
+
+		/* pass phong output params, which are then interpolated */
+		_wnormal = normalize(normal);
+		_wcoord = permuted_coords;
+
+		/* apply projection matrix and emit the vertex */
+		gl_Position = P*vec4(permuted_coords,1);
+		EmitVertex();
+	}
+	EndPrimitive();
 }
