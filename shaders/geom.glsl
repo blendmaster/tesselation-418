@@ -17,6 +17,7 @@ coords is arriving here from the tesselation shader
 needsLeftRightReflection is a flag for disambiguating the handle and spout
 */
 in vec3 coords[3];
+in vec3 normals[3];
 in int[3] needsLeftRightReflection;
 
 /*
@@ -33,11 +34,6 @@ uniform mat4 MV;
 
 void main(void)
 {
-	// TODO for phong, need to somehow get normals from adjacent
-	// vertices in order to smoothly interpolate. Right now, each vertex
-	// is basically isolated, so phong shading results in flat shading.
-	vec3 normal = normalize(mat3(MV) * cross(coords[1]-coords[0],coords[2]-coords[0]));
-
 	// generate reflection around the xz plane (back and front);
 	for (int k = -1; k <= 1; k += 2) {
 
@@ -52,7 +48,16 @@ void main(void)
 				coord.z *= k;
 
 				/* pass phong output params, which are then interpolated */
-				_wnormal = normal;
+
+				// TODO for phong, need to somehow get normals from adjacent
+				// vertices in order to smoothly interpolate. Right now, each vertex
+				// is basically isolated, so phong shading results in flat shading.
+				vec3 normal = normals[i];
+				normal.x *= j;
+				normal.z *= k;
+
+				_wnormal = normalize(mat3(MV) * normal);;
+
 				_wcoord = (MV*vec4(coord,1.0)).xyz;
 
 				/* apply projection matrix and emit the vertex */

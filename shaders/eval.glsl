@@ -12,9 +12,11 @@ layout(quads) in;
 
 /* 
 we'll output the model coordinates of every vertex on the tesselated patch...
+The normal at the vertex for phong shading
 and a flag for reflection in geometry shader
 */
 out vec3 coords;
+out vec3 normals;
 out int needsLeftRightReflection;
 
 /*
@@ -29,6 +31,33 @@ const mat4 MT = transpose(
 			 0, 3, -6, 3,
 			 0, 0, 3, -3,
 			 0, 0, 0, 1));
+
+vec3 coordAt(mat4 Px, mat4 Py, mat4 Pz, float u, float v) {
+	vec4 us = vec4(1, u, u*u, u*u*u);
+	vec4 vs = vec4(1, v, v*v, v*v*v);
+
+	/* use one of the forms of the bi-cubic Bezier formula
+	to compute the vertex coordinates corresponding to (u,v) from the 16 control points.
+	In matrix math, this is
+	[1, u, u*u, u*u*u] * M * P * MT * [1; v; v*v; v*v*V]
+	*/
+	return vec3(
+		dot(((us * M) * Px) * MT, vs),
+		dot(((us * M) * Pz) * MT, vs),
+		dot(((us * M) * Py) * MT, vs)
+	);
+}
+
+vec3 normalAt(mat4 Px, mat4 Py, mat4 Pz, float u, float v) {
+	vec3 point = coordAt(Px, Py, Pz, u, v);
+	vec3 pu = coordAt(Px, Py, Pz, u + 0.01, v       );
+	vec3 pv = coordAt(Px, Py, Pz, u       , v + 0.01);
+
+	vec3 du = pu - point;
+	vec3 dv = pv - point;
+
+	return normalize(cross(du, dv));
+}
 
 void main ()
 {	/*
@@ -84,17 +113,8 @@ void main ()
 	float u = gl_TessCoord.x;
 	float v = gl_TessCoord.y;
 
-	vec4 us = vec4(1, u, u*u, u*u*u);
-	vec4 vs = vec4(1, v, v*v, v*v*v);
-
-	/* use one of the forms of the bi-cubic Bezier formula
-	to compute the vertex coordinates corresponding to (u,v) from the 16 control points.
-	In matrix math, this is
-	[1, u, u*u, u*u*u] * M * P * MT * [1; v; v*v; v*v*V]
-	*/
-	coords.x = dot(((us * M) * Px) * MT, vs);
-	coords.y = dot(((us * M) * Pz) * MT, vs);
-	coords.z = dot(((us * M) * Py) * MT, vs);
+	coords = coordAt(Px, Py, Pz, u, v);
+	normals = normalAt(Px, Py, Pz, u, v);
 
 	needsLeftRightReflection = gl_PrimitiveID < 4 ? 0 : 1;
 }
