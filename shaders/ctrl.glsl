@@ -12,9 +12,9 @@ TESSELATION CONTROL SHADER:
 */
 
 /* 
-Our patches have 4 vertices; There will be 16 for bicubic Bezier patches 
+Our patches have 16 vertices for bicubic Bezier patches
 */
-layout(vertices=4) out;
+layout(vertices=16) out;
 
 /* 
 We are using uniforms to request tesselation granularity from the C code;

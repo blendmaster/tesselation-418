@@ -15,19 +15,50 @@ we'll output the model coordinates of every vertex on the tesselated patch...
 */
 out vec3 coords;
 
+/*
+ * matrix form of bicubic bezier curve
+ */
+const mat4 M = mat4(1, -3, 3, -1,
+		             0, 3, -6, 3,
+		             0, 0, 3, -3,
+		             0, 0, 0, 1);
+const mat4 MT = transpose(
+		mat4(1, -3, 3, -1,
+			 0, 3, -6, 3,
+			 0, 0, 3, -3,
+			 0, 0, 0, 1));
+
 void main ()
-{
-	/* 
+{	/*
 	Short names for positions of the vertices defining the patch.
 	Note that we are still in the model coordinate system - no transformations
 	were applied in the vertex or tesselation control shader.
-	In your code, you may want to define pij for i,j in {0,1,2,3} in a 
-	similar way. 
 	*/
 	vec3 p00 = gl_in[0].gl_Position.xyz;
 	vec3 p01 = gl_in[1].gl_Position.xyz;
-	vec3 p10 = gl_in[2].gl_Position.xyz;
-	vec3 p11 = gl_in[3].gl_Position.xyz;
+	vec3 p02 = gl_in[2].gl_Position.xyz;
+	vec3 p03 = gl_in[3].gl_Position.xyz;
+	vec3 p10 = gl_in[4].gl_Position.xyz;
+	vec3 p11 = gl_in[5].gl_Position.xyz;
+	vec3 p12 = gl_in[6].gl_Position.xyz;
+	vec3 p13 = gl_in[7].gl_Position.xyz;
+	vec3 p20 = gl_in[8].gl_Position.xyz;
+	vec3 p21 = gl_in[9].gl_Position.xyz;
+	vec3 p22 = gl_in[10].gl_Position.xyz;
+	vec3 p23 = gl_in[11].gl_Position.xyz;
+	vec3 p30 = gl_in[12].gl_Position.xyz;
+	vec3 p31 = gl_in[13].gl_Position.xyz;
+	vec3 p32 = gl_in[14].gl_Position.xyz;
+	vec3 p33 = gl_in[15].gl_Position.xyz;
+
+	// column major order
+	// TODO apparently mat4 of vertices is not possible, might need to do Px, Py, Pz and so on
+	mat4 P = mat4(
+      vec4(p00, p10, p20, p30),
+      vec4(p01, p11, p21, p31),
+      vec4(p02, p12, p22, p32),
+      vec4(p03, p13, p23, p33)
+	);
 
 	/* 
 	u and v are the parameter values provided by the tesselation primitive generator.
@@ -37,12 +68,11 @@ void main ()
 	float u = gl_TessCoord.x;
 	float v = gl_TessCoord.y;
 
-	/* 
-	... and here is the formula we use. p00 + u*(p10-p00) + v*(p01-p00) is the point
-	on the parallelogram spanned by p00->p10 and p00->p01 parameterized using these
-	two vectors. We add a funny perturbation on top of that.
-	In your code, you should use one of the forms of the bi-cubic Bezier formula
+	vec4 us = vec4(1, u, u*u, u*u*u);
+	vec4 vs = vec4(1, v, v*v, v*v*v);
+
+	/* use one of the forms of the bi-cubic Bezier formula
 	to compute the vertex coordinates corresponding to (u,v) from the 16 control points.
 	*/
-	coords = p00 + u*(p10-p00) + v*(p01-p00);
+	coords = (us * M * P * MT * vs).xyz;
 }
