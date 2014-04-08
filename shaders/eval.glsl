@@ -43,8 +43,8 @@ vec3 coordAt(mat4 Px, mat4 Py, mat4 Pz, float u, float v) {
 	*/
 	return vec3(
 		dot(((us * M) * Px) * MT, vs),
-		dot(((us * M) * Pz) * MT, vs),
-		dot(((us * M) * Py) * MT, vs)
+		dot(((us * M) * Py) * MT, vs),
+		dot(((us * M) * Pz) * MT, vs)
 	);
 }
 
@@ -56,7 +56,7 @@ vec3 normalAt(mat4 Px, mat4 Py, mat4 Pz, float u, float v) {
 	vec3 du = pu - point;
 	vec3 dv = pv - point;
 
-	return normalize(cross(du, dv));
+	return normalize(cross(dv, du));
 }
 
 void main ()

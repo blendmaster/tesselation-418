@@ -45,7 +45,7 @@ void main(void)
 				vec3 coord = coords[i];
 
 				coord.x *= j;
-				coord.z *= k;
+				coord.y *= k;
 
 				/* pass phong output params, which are then interpolated */
 
@@ -54,9 +54,9 @@ void main(void)
 				// is basically isolated, so phong shading results in flat shading.
 				vec3 normal = normals[i];
 				normal.x *= j;
-				normal.z *= k;
+				normal.y *= k;
 
-				_wnormal = normalize(mat3(MV) * normal);;
+				_wnormal = normalize(mat3(MV) * normal);
 
 				_wcoord = (MV*vec4(coord,1.0)).xyz;
 
