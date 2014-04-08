@@ -47,6 +47,10 @@ void main(void)
 			for ( int i=0; i<3; i++ ) {
 
 				vec3 permuted_coords, permuted_normal;
+
+				// TODO for phong, need to somehow get normals from adjacent
+				// vertices in order to smoothly interpolate. Right now, each vertex
+				// is basically isolated, so phong shading results in flat shading.
 				vec3 normal = cross(coords[1]-coords[0],coords[2]-coords[0]);
 
 				/* swap and perhaps negate the coordinates as described above... */
