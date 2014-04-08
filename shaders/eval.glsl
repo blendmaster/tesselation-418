@@ -12,8 +12,10 @@ layout(quads) in;
 
 /* 
 we'll output the model coordinates of every vertex on the tesselated patch...
+and a flag for reflection in geometry shader
 */
 out vec3 coords;
+out int needsLeftRightReflection;
 
 /*
  * matrix form of bicubic bezier curve
@@ -93,4 +95,6 @@ void main ()
 	coords.x = dot(((us * M) * Px) * MT, vs);
 	coords.y = dot(((us * M) * Pz) * MT, vs);
 	coords.z = dot(((us * M) * Py) * MT, vs);
+
+	needsLeftRightReflection = gl_PrimitiveID < 4 ? 0 : 1;
 }
