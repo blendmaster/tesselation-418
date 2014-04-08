@@ -20,26 +20,16 @@ coords is arriving here from the tesselation shader
 in vec3 coords[3];
 
 /*
-we'll evaluate the illumination formula here. This is the output sent to the 
-fragment shader. We'll do flat shading.
-*/
-flat out vec3 color;
+ * vanilla phong shading out
+ */
+noperspective out vec3 _wcoord;
+noperspective out vec3 _wnormal;
 
 /* 
 ... and transform from model to world coordinate system
 */
 uniform mat4 P;
 uniform mat4 MV; 
-
-/*
-Usual variables needed for illumination. AI = I_a * k_a.
-We'll do greyscale rendering here, so the K's are scalars.
-*/
-uniform float I;
-uniform float AI; 
-uniform vec3 lloc;
-uniform float Kd, Ks;
-uniform float nspec;
 
 void main(void)
 {
@@ -70,16 +60,9 @@ void main(void)
 				normal = mat3(MV)*permuted_normal;
 				permuted_coords = (MV*vec4(permuted_coords,1.0)).xyz;
 
-				/* evaluate the illumination formula as usual */
-				vec3 N = normalize(normal);
-				vec3 L = normalize(lloc-permuted_coords);
-				vec3 V = normalize(-permuted_coords);
-				vec3 H = normalize(L+V);
-  				float NdotL = dot(N,L);
-				float HdotN = dot(N,H);
-				if (HdotN<0) HdotN = 0;
-				if (NdotL<0) NdotL = 0;
-				color = vec3(I*(Kd*NdotL + Ks*pow(HdotN,nspec)) + AI);  
+				/* pass phong output params, which are then interpolated */
+				_wnormal = normalize(normal);
+				_wcoord = permuted_coords;
 
 				/* apply projection matrix and emit the vertex */
 				gl_Position = P*vec4(permuted_coords,1);

@@ -149,4 +149,7 @@ Desktop.ini
 $RECYCLE.BIN/
 
 # Mac crap
-.DS_Store
+.DS_Store.cproject
+.project
+viewer
+.cproject
